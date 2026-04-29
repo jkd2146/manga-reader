@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { getManga } from '../services/mangadex';
+import { getSource } from '../services/registry';
 
 const router = Router();
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:source/:id', async (req: Request, res: Response) => {
   try {
-    const manga = await getManga(req.params.id);
+    const manga = await getSource(req.params.source).getManga(req.params.id);
     res.json(manga);
   } catch (err) {
     console.error('Manga fetch error:', err);

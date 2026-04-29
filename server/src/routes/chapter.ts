@@ -1,11 +1,11 @@
 import { Router, Request, Response } from 'express';
-import { getChapterPages } from '../services/mangadex';
+import { getSource } from '../services/registry';
 
 const router = Router();
 
-router.get('/:id', async (req: Request, res: Response) => {
+router.get('/:source/:id', async (req: Request, res: Response) => {
   try {
-    const data = await getChapterPages(req.params.id);
+    const data = await getSource(req.params.source).getChapterPages(req.params.id);
     res.json(data);
   } catch (err) {
     console.error('Chapter fetch error:', err);

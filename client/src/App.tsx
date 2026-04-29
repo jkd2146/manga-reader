@@ -9,8 +9,8 @@ export default function App() {
     <SettingsProvider>
       <Routes>
         <Route path="/" element={<Home />} />
-        <Route path="/manga/:id" element={<MangaDetail />} />
-        <Route path="/manga/:mangaId/chapter/:chapterId" element={<Reader />} />
+        <Route path="/manga/:source/:id" element={<MangaDetail />} />
+        <Route path="/manga/:source/:mangaId/chapter/:chapterId" element={<Reader />} />
       </Routes>
     </SettingsProvider>
   );

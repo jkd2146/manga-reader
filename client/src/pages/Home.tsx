@@ -35,8 +35,13 @@ export default function Home() {
   }
 
   const libraryAsManga: MangaSummary[] = library.map((e) => ({
-    id: e.manga_id, title: e.title, cover: e.cover,
-    status: e.status, tags: [], description: '',
+    id: e.manga_id,
+    source: e.source ?? 'mangadex',
+    title: e.title,
+    cover: e.cover,
+    status: e.status,
+    tags: [],
+    description: '',
   }));
 
   return (
@@ -47,7 +52,6 @@ export default function Home() {
         style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
-          {/* Logo */}
           <span
             className="text-base font-bold shrink-0 hidden sm:block"
             style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-2))', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}

@@ -4,6 +4,7 @@ const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 export interface MangaSummary {
   id: string;
+  source: string;
   title: string;
   cover: string;
   status: string;
@@ -34,19 +35,19 @@ async function apiFetch<T>(path: string): Promise<T> {
   return res.json();
 }
 
-export async function searchManga(query: string, page = 1): Promise<MangaSummary[]> {
+export async function searchManga(query: string, page = 1, source = 'mangadex'): Promise<MangaSummary[]> {
   const data = await apiFetch<{ results: MangaSummary[] }>(
-    `/api/search?q=${encodeURIComponent(query)}&page=${page}`
+    `/api/search?q=${encodeURIComponent(query)}&page=${page}&source=${source}`
   );
-  return data.results;
+  return data.results.map((r) => ({ ...r, source }));
 }
 
-export async function getManga(id: string): Promise<MangaDetail> {
-  return apiFetch<MangaDetail>(`/api/manga/${id}`);
+export async function getManga(source: string, id: string): Promise<MangaDetail> {
+  return apiFetch<MangaDetail>(`/api/manga/${source}/${encodeURIComponent(id)}`);
 }
 
-export async function getChapter(id: string): Promise<ChapterPages> {
-  return apiFetch<ChapterPages>(`/api/chapter/${id}`);
+export async function getChapter(source: string, id: string): Promise<ChapterPages> {
+  return apiFetch<ChapterPages>(`/api/chapter/${source}/${encodeURIComponent(id)}`);
 }
 
 export function proxyImage(url: string): string {

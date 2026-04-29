@@ -5,7 +5,7 @@ import { addToLibrary, removeFromLibrary, getLibrary, getProgress, ProgressEntry
 import SettingsPanel from '../components/SettingsPanel';
 
 export default function MangaDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const { source = 'mangadex', id } = useParams<{ source: string; id: string }>();
   const [manga, setManga] = useState<MangaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -17,15 +17,15 @@ export default function MangaDetailPage() {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    Promise.all([getManga(id), getLibrary(), getProgress(id)])
+    Promise.all([getManga(source, id), getLibrary(), getProgress(id)])
       .then(([m, lib, prog]) => {
         setManga(m);
-        setInLibrary(lib.some((e) => e.manga_id === id));
+        setInLibrary(lib.some((e) => e.manga_id === id && (e.source ?? 'mangadex') === source));
         setProgress(prog);
       })
       .catch(() => setError('Failed to load'))
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [source, id]);
 
   async function toggleLibrary() {
     if (!manga) return;
@@ -33,7 +33,7 @@ export default function MangaDetailPage() {
       await removeFromLibrary(manga.id);
       setInLibrary(false);
     } else {
-      await addToLibrary({ manga_id: manga.id, title: manga.title, cover: manga.cover, status: manga.status });
+      await addToLibrary({ manga_id: manga.id, source, title: manga.title, cover: manga.cover, status: manga.status });
       setInLibrary(true);
     }
   }
@@ -140,6 +140,13 @@ export default function MangaDetailPage() {
                 {manga.status}
               </span>
 
+              <span
+                className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase"
+                style={{ backgroundColor: 'var(--card)', color: 'var(--muted)', border: '1px solid var(--border)' }}
+              >
+                {source}
+              </span>
+
               <button
                 onClick={toggleLibrary}
                 className="text-xs font-semibold px-3 py-1 rounded-full transition-all"
@@ -155,7 +162,7 @@ export default function MangaDetailPage() {
 
             {continueChapter && (
               <Link
-                to={`/manga/${manga.id}/chapter/${continueChapter.id}`}
+                to={`/manga/${source}/${manga.id}/chapter/${continueChapter.id}`}
                 className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)', boxShadow: '0 4px 20px rgba(124,111,247,0.35)' }}
               >
@@ -204,8 +211,7 @@ export default function MangaDetailPage() {
               No readable English chapters available
             </p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>
-              MangaDex doesn't host English chapters for this title — likely due to publisher DMCA takedowns (common for Viz/Shueisha titles like Naruto and One Piece).
-              Try searching on a different source.
+              This source doesn't have English chapters for this title. Try switching to a different source.
             </p>
           </div>
         ) : (
@@ -217,7 +223,7 @@ export default function MangaDetailPage() {
                 return (
                   <Link
                     key={ch.id}
-                    to={`/manga/${manga.id}/chapter/${ch.id}`}
+                    to={`/manga/${source}/${manga.id}/chapter/${ch.id}`}
                     className="flex items-center justify-between px-4 py-3.5 transition-colors group"
                     style={{
                       backgroundColor: isCurrent ? 'rgba(124,111,247,0.08)' : 'var(--surface)',

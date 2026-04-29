@@ -9,7 +9,7 @@ import SinglePage from '../components/reader/SinglePage';
 import DoublePage from '../components/reader/DoublePage';
 
 export default function Reader() {
-  const { mangaId, chapterId } = useParams<{ mangaId: string; chapterId: string }>();
+  const { source = 'mangadex', mangaId, chapterId } = useParams<{ source: string; mangaId: string; chapterId: string }>();
   const navigate = useNavigate();
   const { settings } = useSettings();
 
@@ -22,8 +22,8 @@ export default function Reader() {
 
   useEffect(() => {
     if (!mangaId) return;
-    getManga(mangaId).then(setManga).catch(() => null);
-  }, [mangaId]);
+    getManga(source, mangaId).then(setManga).catch(() => null);
+  }, [source, mangaId]);
 
   useEffect(() => {
     if (!chapterId) return;
@@ -31,11 +31,11 @@ export default function Reader() {
     setLoading(true);
     setError('');
     window.scrollTo(0, 0);
-    getChapter(chapterId)
+    getChapter(source, chapterId)
       .then((ch) => {
         setChapter(ch);
         if (mangaId) {
-          getManga(mangaId).then((m) => {
+          getManga(source, mangaId).then((m) => {
             const cur = m.chapters.find((c) => c.id === chapterId);
             if (cur) saveProgress(mangaId, chapterId, cur.number).catch(() => null);
           });
@@ -43,7 +43,7 @@ export default function Reader() {
       })
       .catch(() => setError('Failed to load chapter'))
       .finally(() => setLoading(false));
-  }, [chapterId, mangaId]);
+  }, [source, chapterId, mangaId]);
 
   const currentIndex = manga?.chapters.findIndex((ch) => ch.id === chapterId) ?? -1;
   const prevChapter = currentIndex > 0 && manga ? manga.chapters[currentIndex - 1] : null;
@@ -51,12 +51,12 @@ export default function Reader() {
     ? manga.chapters[currentIndex + 1] : null;
 
   const goToPrev = useCallback(() => {
-    if (prevChapter && mangaId) navigate(`/manga/${mangaId}/chapter/${prevChapter.id}`);
-  }, [prevChapter, mangaId, navigate]);
+    if (prevChapter && mangaId) navigate(`/manga/${source}/${mangaId}/chapter/${prevChapter.id}`);
+  }, [prevChapter, source, mangaId, navigate]);
 
   const goToNext = useCallback(() => {
-    if (nextChapter && mangaId) navigate(`/manga/${mangaId}/chapter/${nextChapter.id}`);
-  }, [nextChapter, mangaId, navigate]);
+    if (nextChapter && mangaId) navigate(`/manga/${source}/${mangaId}/chapter/${nextChapter.id}`);
+  }, [nextChapter, source, mangaId, navigate]);
 
   useEffect(() => {
     if (settings.readingMode !== 'long-strip') return;
@@ -94,7 +94,7 @@ export default function Reader() {
       >
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <Link
-            to={`/manga/${mangaId}`}
+            to={`/manga/${source}/${mangaId}`}
             className="text-sm font-medium shrink-0"
             style={{ color: 'var(--accent)' }}
           >

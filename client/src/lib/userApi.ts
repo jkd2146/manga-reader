@@ -2,6 +2,7 @@ const API_BASE = import.meta.env.VITE_API_URL ?? '';
 
 export interface LibraryEntry {
   manga_id: string;
+  source: string;
   title: string;
   cover: string;
   status: string;
@@ -21,7 +22,7 @@ export async function getLibrary(): Promise<LibraryEntry[]> {
   return res.json() as Promise<LibraryEntry[]>;
 }
 
-export async function addToLibrary(entry: Omit<LibraryEntry, 'added_at'>): Promise<void> {
+export async function addToLibrary(entry: Omit<LibraryEntry, 'added_at'> & { source?: string }): Promise<void> {
   await fetch(`${API_BASE}/api/library`, {
     method: 'POST',
     headers: JSON_HEADERS,

@@ -3,7 +3,7 @@ import { MangaSummary, proxyImage } from '../lib/api';
 
 export default function MangaCard({ manga }: { manga: MangaSummary }) {
   return (
-    <Link to={`/manga/${manga.id}`} className="group block">
+    <Link to={`/manga/${manga.source ?? 'mangadex'}/${manga.id}`} className="group block">
       <div
         className="relative aspect-[3/4] overflow-hidden rounded-xl transition-transform duration-200 group-hover:-translate-y-1"
         style={{ backgroundColor: 'var(--card)', boxShadow: '0 4px 20px rgba(0,0,0,0.4)' }}

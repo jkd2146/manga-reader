@@ -23,12 +23,14 @@ router.get('/', async (req: Request, res: Response) => {
     return;
   }
 
+  const referer = parsed.hostname.includes('comick') ? 'https://comick.io' : 'https://mangadex.org';
+
   try {
     const upstream = await axios.get(url, {
       responseType: 'stream',
       timeout: 20000,
       headers: {
-        Referer: 'https://mangadex.org',
+        Referer: referer,
         'User-Agent': 'Mozilla/5.0 (compatible; MangaReader/1.0)',
       },
     });
