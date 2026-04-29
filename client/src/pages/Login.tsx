@@ -36,14 +36,16 @@ export default function Login() {
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Enter password"
               autoFocus
-              className="w-full px-4 py-2.5 rounded-lg bg-[var(--card)] border border-[var(--border)] focus:outline-none focus:border-blue-500 text-[var(--text)]"
+              className="w-full px-4 py-2.5 rounded-lg bg-[var(--card)] border border-[var(--border)] focus:outline-none text-[var(--text)]"
+              style={{ outlineColor: 'var(--accent)' }}
             />
           </div>
           {error && <p className="text-red-400 text-sm">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg font-medium transition-colors"
+            className="w-full py-2.5 disabled:opacity-50 rounded-lg font-medium transition-opacity hover:opacity-90"
+            style={{ background: 'linear-gradient(135deg, var(--accent), var(--accent-2))', color: 'var(--bg)' }}
           >
             {loading ? 'Signing in…' : 'Sign in'}
           </button>

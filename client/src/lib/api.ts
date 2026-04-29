@@ -53,3 +53,12 @@ export async function getChapter(source: string, id: string): Promise<ChapterPag
 export function proxyImage(url: string): string {
   return `${API_BASE}/api/proxy?url=${encodeURIComponent(url)}`;
 }
+
+export interface TrendingData {
+  topRated: MangaSummary[];
+  recentlyUpdated: MangaSummary[];
+}
+
+export async function getTrending(): Promise<TrendingData> {
+  return apiFetch<TrendingData>('/api/trending');
+}

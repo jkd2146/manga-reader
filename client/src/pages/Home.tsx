@@ -1,23 +1,53 @@
 import { useState, useEffect } from 'react';
-import { searchManga, MangaSummary } from '../lib/api';
+import { searchManga, getTrending, MangaSummary, TrendingData } from '../lib/api';
 import { getLibrary, LibraryEntry } from '../lib/userApi';
+import { useAuth } from '../context/AuthContext';
 import SearchBar from '../components/SearchBar';
 import MangaGrid from '../components/MangaGrid';
+import MangaCard from '../components/MangaCard';
 import SettingsPanel from '../components/SettingsPanel';
 
-type Tab = 'library' | 'search';
+type Tab = 'library' | 'search' | 'discover';
+
+function ShelfRow({ title, manga }: { title: string; manga: MangaSummary[] }) {
+  if (manga.length === 0) return null;
+  return (
+    <div className="mb-8">
+      <h2 className="text-sm font-bold uppercase tracking-wider mb-3" style={{ color: 'var(--muted)' }}>
+        {title}
+      </h2>
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
+        {manga.slice(0, 12).map((m) => (
+          <MangaCard key={m.id} manga={m} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function Home() {
+  const { logout } = useAuth();
   const [tab, setTab] = useState<Tab>('library');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<MangaSummary[]>([]);
   const [library, setLibrary] = useState<LibraryEntry[]>([]);
+  const [trending, setTrending] = useState<TrendingData | null>(null);
   const [loading, setLoading] = useState(false);
+  const [trendingLoading, setTrendingLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [error, setError] = useState('');
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   useEffect(() => { getLibrary().then(setLibrary).catch(() => null); }, []);
+
+  useEffect(() => {
+    if (tab !== 'discover' || trending) return;
+    setTrendingLoading(true);
+    getTrending()
+      .then(setTrending)
+      .catch(() => null)
+      .finally(() => setTrendingLoading(false));
+  }, [tab, trending]);
 
   async function handleSearch(q: string) {
     setQuery(q);
@@ -46,7 +76,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
-      {/* Header */}
       <header
         className="sticky top-0 z-10"
         style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
@@ -67,11 +96,18 @@ export default function Home() {
           >
             ⚙
           </button>
+          <button
+            onClick={logout}
+            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg transition-colors text-sm"
+            style={{ backgroundColor: 'var(--card)', color: 'var(--muted)' }}
+            title="Sign out"
+          >
+            ↪
+          </button>
         </div>
 
-        {/* Tabs */}
         <div className="max-w-7xl mx-auto px-4 flex gap-1">
-          {(['library', 'search'] as Tab[]).map((t) => (
+          {(['library', 'discover', 'search'] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -96,7 +132,7 @@ export default function Home() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-6">
-        {/* Library */}
+
         {tab === 'library' && (
           library.length === 0 ? (
             <div className="text-center py-32">
@@ -109,7 +145,46 @@ export default function Home() {
           )
         )}
 
-        {/* Search */}
+        {tab === 'discover' && (
+          <>
+            <div className="grid grid-cols-3 gap-3 mb-8">
+              {[
+                { label: 'In Library', value: library.length },
+                { label: 'Ongoing', value: library.filter((e) => e.status === 'ongoing').length },
+                { label: 'Completed', value: library.filter((e) => e.status === 'completed').length },
+              ].map(({ label, value }) => (
+                <div
+                  key={label}
+                  className="rounded-xl p-4 text-center"
+                  style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+                >
+                  <p className="text-2xl font-bold" style={{ color: 'var(--accent)' }}>{value}</p>
+                  <p className="text-xs mt-0.5" style={{ color: 'var(--muted)' }}>{label}</p>
+                </div>
+              ))}
+            </div>
+            {libraryAsManga.length > 0 && (
+              <ShelfRow title="Your Library" manga={libraryAsManga.slice(0, 6)} />
+            )}
+            {trendingLoading && (
+              <div className="flex justify-center py-16">
+                <div className="flex gap-1">
+                  {[0, 1, 2].map((i) => (
+                    <div key={i} className="w-2 h-2 rounded-full animate-bounce"
+                      style={{ backgroundColor: 'var(--accent)', animationDelay: `${i * 0.15}s` }} />
+                  ))}
+                </div>
+              </div>
+            )}
+            {trending && (
+              <>
+                <ShelfRow title="Top Rated" manga={trending.topRated} />
+                <ShelfRow title="Recently Updated (EN)" manga={trending.recentlyUpdated} />
+              </>
+            )}
+          </>
+        )}
+
         {tab === 'search' && (
           <>
             {!searched && (
@@ -122,11 +197,8 @@ export default function Home() {
               <div className="flex justify-center py-32">
                 <div className="flex gap-1">
                   {[0, 1, 2].map((i) => (
-                    <div
-                      key={i}
-                      className="w-2 h-2 rounded-full animate-bounce"
-                      style={{ backgroundColor: 'var(--accent)', animationDelay: `${i * 0.15}s` }}
-                    />
+                    <div key={i} className="w-2 h-2 rounded-full animate-bounce"
+                      style={{ backgroundColor: 'var(--accent)', animationDelay: `${i * 0.15}s` }} />
                   ))}
                 </div>
               </div>

@@ -4,12 +4,15 @@ import { getManga, MangaDetail, proxyImage } from '../lib/api';
 import { addToLibrary, removeFromLibrary, getLibrary, getProgress, ProgressEntry } from '../lib/userApi';
 import SettingsPanel from '../components/SettingsPanel';
 
+type SortOrder = 'desc' | 'asc';
+
 export default function MangaDetailPage() {
   const { source = 'mangadex', id } = useParams<{ source: string; id: string }>();
   const [manga, setManga] = useState<MangaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showAll, setShowAll] = useState(false);
+  const [sort, setSort] = useState<SortOrder>('desc');
   const [inLibrary, setInLibrary] = useState(false);
   const [progress, setProgress] = useState<ProgressEntry | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -59,9 +62,11 @@ export default function MangaDetailPage() {
     );
   }
 
-  const listedChapters = showAll
+  const sorted = sort === 'desc'
     ? [...manga.chapters].reverse()
-    : [...manga.chapters].reverse().slice(0, 50);
+    : [...manga.chapters];
+
+  const listedChapters = showAll ? sorted : sorted.slice(0, 50);
 
   const continueChapter = progress
     ? manga.chapters.find((ch) => ch.id === progress.chapter_id)
@@ -95,8 +100,8 @@ export default function MangaDetailPage() {
               backgroundImage: `url(${proxyImage(manga.cover)})`,
               backgroundSize: 'cover',
               backgroundPosition: 'center 20%',
-              filter: 'blur(48px) saturate(1.4)',
-              opacity: 0.18,
+              filter: 'blur(48px) saturate(1.2)',
+              opacity: 0.15,
             }}
           />
         )}
@@ -110,7 +115,7 @@ export default function MangaDetailPage() {
                 src={proxyImage(manga.cover)}
                 alt={manga.title}
                 className="w-full rounded-2xl"
-                style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.6)' }}
+                style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.5)' }}
               />
             ) : (
               <div
@@ -132,28 +137,34 @@ export default function MangaDetailPage() {
               <span
                 className="text-xs font-semibold px-2.5 py-1 rounded-full"
                 style={{
-                  backgroundColor: manga.status === 'ongoing' ? 'rgba(52,211,153,0.15)' : 'var(--card)',
+                  backgroundColor: manga.status === 'ongoing' ? 'rgba(93,155,107,0.15)' : 'var(--card)',
                   color: manga.status === 'ongoing' ? 'var(--green)' : 'var(--muted)',
-                  border: `1px solid ${manga.status === 'ongoing' ? 'rgba(52,211,153,0.25)' : 'var(--border)'}`,
+                  border: `1px solid ${manga.status === 'ongoing' ? 'rgba(93,155,107,0.3)' : 'var(--border)'}`,
                 }}
               >
                 {manga.status}
               </span>
 
-              <span
-                className="text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase"
-                style={{ backgroundColor: 'var(--card)', color: 'var(--muted)', border: '1px solid var(--border)' }}
-              >
-                {source}
-              </span>
+              {manga.chapters.length === 0 && (
+                <span
+                  className="text-xs font-semibold px-2.5 py-1 rounded-full"
+                  style={{
+                    backgroundColor: 'rgba(196,106,106,0.12)',
+                    color: 'var(--red)',
+                    border: '1px solid rgba(196,106,106,0.25)',
+                  }}
+                >
+                  No EN chapters
+                </span>
+              )}
 
               <button
                 onClick={toggleLibrary}
                 className="text-xs font-semibold px-3 py-1 rounded-full transition-all"
                 style={{
-                  backgroundColor: inLibrary ? 'rgba(248,113,113,0.12)' : 'rgba(124,111,247,0.12)',
+                  backgroundColor: inLibrary ? 'rgba(196,106,106,0.12)' : 'rgba(201,168,108,0.12)',
                   color: inLibrary ? 'var(--red)' : 'var(--accent)',
-                  border: `1px solid ${inLibrary ? 'rgba(248,113,113,0.25)' : 'rgba(124,111,247,0.25)'}`,
+                  border: `1px solid ${inLibrary ? 'rgba(196,106,106,0.25)' : 'rgba(201,168,108,0.25)'}`,
                 }}
               >
                 {inLibrary ? '− Remove from library' : '+ Add to library'}
@@ -163,8 +174,8 @@ export default function MangaDetailPage() {
             {continueChapter && (
               <Link
                 to={`/manga/${source}/${manga.id}/chapter/${continueChapter.id}`}
-                className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 rounded-xl text-sm font-semibold text-white transition-opacity hover:opacity-90"
-                style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)', boxShadow: '0 4px 20px rgba(124,111,247,0.35)' }}
+                className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
+                style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)', color: 'var(--bg)', boxShadow: '0 4px 20px rgba(201,168,108,0.3)' }}
               >
                 ▶ Continue — Ch. {continueChapter.number}
               </Link>
@@ -200,6 +211,27 @@ export default function MangaDetailPage() {
             Chapters
             <span className="ml-2 text-sm font-normal" style={{ color: 'var(--muted)' }}>({manga.chapters.length})</span>
           </h2>
+
+          {manga.chapters.length > 1 && (
+            <div
+              className="flex items-center gap-0.5 p-0.5 rounded-lg"
+              style={{ backgroundColor: 'var(--card)', border: '1px solid var(--border)' }}
+            >
+              {(['desc', 'asc'] as SortOrder[]).map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setSort(s)}
+                  className="px-3 py-1 text-xs font-semibold rounded-md transition-all"
+                  style={{
+                    backgroundColor: sort === s ? 'var(--accent)' : 'transparent',
+                    color: sort === s ? 'var(--bg)' : 'var(--muted)',
+                  }}
+                >
+                  {s === 'desc' ? 'Newest' : 'Oldest'}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {manga.chapters.length === 0 ? (
@@ -208,10 +240,10 @@ export default function MangaDetailPage() {
             style={{ border: '1px solid var(--border)', backgroundColor: 'var(--surface)' }}
           >
             <p className="text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>
-              No readable English chapters available
+              No English chapters available
             </p>
             <p className="text-xs leading-relaxed" style={{ color: 'var(--muted)' }}>
-              This source doesn't have English chapters for this title. Try switching to a different source.
+              This title has no readable English chapters on MangaDex — likely due to publisher DMCA takedowns. Try reading on the official publisher site.
             </p>
           </div>
         ) : (
@@ -219,14 +251,13 @@ export default function MangaDetailPage() {
             <div className="rounded-xl overflow-hidden" style={{ border: '1px solid var(--border)' }}>
               {listedChapters.map((ch, idx) => {
                 const isCurrent = continueChapter?.id === ch.id;
-                const isNonEnglish = ch.language && ch.language !== 'en';
                 return (
                   <Link
                     key={ch.id}
                     to={`/manga/${source}/${manga.id}/chapter/${ch.id}`}
                     className="flex items-center justify-between px-4 py-3.5 transition-colors group"
                     style={{
-                      backgroundColor: isCurrent ? 'rgba(124,111,247,0.08)' : 'var(--surface)',
+                      backgroundColor: isCurrent ? 'rgba(201,168,108,0.08)' : 'var(--surface)',
                       borderTop: idx === 0 ? 'none' : '1px solid var(--border)',
                     }}
                     onMouseEnter={(e) => { if (!isCurrent) (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--card)'; }}
@@ -240,14 +271,6 @@ export default function MangaDetailPage() {
                         Ch. {ch.number}
                         {ch.title && <span style={{ color: 'var(--muted)' }}> — {ch.title}</span>}
                       </span>
-                      {isNonEnglish && (
-                        <span
-                          className="text-[10px] font-bold px-1.5 py-0.5 rounded shrink-0 uppercase"
-                          style={{ backgroundColor: 'rgba(251,191,36,0.12)', color: '#f59e0b', border: '1px solid rgba(251,191,36,0.2)' }}
-                        >
-                          {ch.language}
-                        </span>
-                      )}
                     </div>
                     <span className="text-xs shrink-0 ml-4" style={{ color: 'var(--muted)' }}>
                       {new Date(ch.publishAt).toLocaleDateString()}

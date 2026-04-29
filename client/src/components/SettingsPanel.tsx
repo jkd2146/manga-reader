@@ -33,7 +33,7 @@ function Chip<T extends string>({ value, label, current, onClick }: {
       style={{
         backgroundColor: active ? 'var(--accent)' : 'var(--card)',
         color: active ? '#fff' : 'var(--muted)',
-        boxShadow: active ? '0 0 12px rgba(124,111,247,0.4)' : 'none',
+        boxShadow: active ? '0 0 12px rgba(201,168,108,0.35)' : 'none',
       }}
     >
       {label ?? value}

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { getChapter, getManga, ChapterPages, MangaDetail, proxyImage } from '../lib/api';
 import { saveProgress } from '../lib/userApi';
@@ -69,7 +69,9 @@ export default function Reader() {
   }, [settings.readingMode, goToPrev, goToNext]);
 
   const currentChapter = manga?.chapters[currentIndex];
-  const proxiedPages = chapter?.pages.map(proxyImage) ?? [];
+  // Memoized so the array reference is stable — prevents SinglePage/DoublePage
+  // from resetting to page 0 whenever Reader re-renders (e.g. settings panel open/close)
+  const proxiedPages = useMemo(() => chapter?.pages.map(proxyImage) ?? [], [chapter]);
 
   if (error) {
     return (
@@ -110,21 +112,21 @@ export default function Reader() {
           <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={goToPrev} disabled={!prevChapter}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-sm disabled:opacity-20"
+              className="w-10 h-10 flex items-center justify-center rounded-xl text-base disabled:opacity-20"
               style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}
             >
               ‹
             </button>
             <button
               onClick={goToNext} disabled={!nextChapter}
-              className="w-8 h-8 flex items-center justify-center rounded-lg text-sm disabled:opacity-20"
+              className="w-10 h-10 flex items-center justify-center rounded-xl text-base disabled:opacity-20"
               style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}
             >
               ›
             </button>
             <button
               onClick={() => setSettingsOpen(true)}
-              className="w-8 h-8 flex items-center justify-center rounded-lg"
+              className="w-10 h-10 flex items-center justify-center rounded-xl"
               style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.5)' }}
             >
               ⚙
@@ -153,16 +155,16 @@ export default function Reader() {
           {settings.readingMode === 'long-strip' && (
             <>
               <LongStrip pages={proxiedPages} pageFit={settings.pageFit} />
-              <div className="flex justify-center gap-3 py-10">
+              <div className="flex justify-center gap-3 px-4 py-10">
                 <button onClick={goToPrev} disabled={!prevChapter}
-                  className="px-6 py-3 rounded-xl text-sm font-semibold disabled:opacity-25 transition-opacity"
+                  className="flex-1 max-w-xs py-4 rounded-xl text-sm font-semibold disabled:opacity-25 transition-opacity"
                   style={{ backgroundColor: 'rgba(255,255,255,0.08)', color: 'rgba(255,255,255,0.7)' }}>
-                  ← Previous
+                  ← Previous chapter
                 </button>
                 <button onClick={goToNext} disabled={!nextChapter}
-                  className="px-6 py-3 rounded-xl text-sm font-semibold text-white disabled:opacity-25 transition-opacity hover:opacity-90"
+                  className="flex-1 max-w-xs py-4 rounded-xl text-sm font-semibold text-white disabled:opacity-25 transition-opacity hover:opacity-90"
                   style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)' }}>
-                  Next →
+                  Next chapter →
                 </button>
               </div>
             </>

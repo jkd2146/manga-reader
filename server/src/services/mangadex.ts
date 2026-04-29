@@ -156,14 +156,8 @@ export async function getManga(id: string): Promise<MangaDetail> {
     fetchAllChapters(id, 'en'),
   ]);
 
-  // Fall back to all languages only when no English chapters exist at all
-  // (e.g. Naruto — most EN chapters have been DMCA'd from MangaDex)
-  let raw = englishChapters;
-  if (raw.length === 0) {
-    raw = await fetchAllChapters(id);
-  }
-
-  const chapters = deduplicate(raw);
+  // Strictly English only — no fallback to other languages
+  const chapters = deduplicate(englishChapters);
 
   const m = infoRes.data.data;
   const attrs = m.attributes as Record<string, unknown>;

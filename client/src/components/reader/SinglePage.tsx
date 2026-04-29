@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { PageFit, ReadingDirection } from '../../context/SettingsContext';
+import { useSwipe } from '../../hooks/useSwipe';
 
 interface Props {
   pages: string[];
@@ -9,7 +10,6 @@ interface Props {
   onPrevChapter?: () => void;
 }
 
-// Header ~48px + bottom bar ~52px + breathing room = 120px total
 const CHROME_HEIGHT = 120;
 
 function imgStyle(fit: PageFit): React.CSSProperties {
@@ -45,20 +45,28 @@ export default function SinglePage({ pages, pageFit, direction, onNextChapter, o
     else onPrevChapter?.();
   }, [index, onPrevChapter]);
 
+  const forward  = direction === 'ltr' ? goNext : goPrev;
+  const backward = direction === 'ltr' ? goPrev : goNext;
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'ArrowRight') direction === 'ltr' ? goNext() : goPrev();
-      if (e.key === 'ArrowLeft') direction === 'ltr' ? goPrev() : goNext();
+      if (e.key === 'ArrowRight') forward();
+      if (e.key === 'ArrowLeft') backward();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [direction, goNext, goPrev]);
+  }, [forward, backward]);
+
+  // Swipe left = go forward, swipe right = go backward (direction-aware)
+  const { onTouchStart, onTouchEnd, consumeSwipe } = useSwipe({
+    onSwipeLeft: forward,
+    onSwipeRight: backward,
+  });
 
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
+    if (consumeSwipe()) return;
     const mid = e.currentTarget.getBoundingClientRect().width / 2;
-    const clickedRight = e.clientX > mid;
-    if (direction === 'ltr') clickedRight ? goNext() : goPrev();
-    else clickedRight ? goPrev() : goNext();
+    e.clientX > mid ? forward() : backward();
   }
 
   if (pages.length === 0) {
@@ -71,10 +79,13 @@ export default function SinglePage({ pages, pageFit, direction, onNextChapter, o
 
   return (
     <div className="flex flex-col" style={{ minHeight: `calc(100dvh - 48px)` }}>
-      {/* Page area */}
+      {/* Page area — tap left/right half or swipe to navigate */}
       <div
-        className="flex-1 flex items-center justify-center cursor-pointer select-none px-4 py-3"
+        className="flex-1 flex items-center justify-center cursor-pointer select-none px-2 py-2 sm:px-4 sm:py-3"
         onClick={handleClick}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        style={{ touchAction: 'pan-y' }}
       >
         <img
           src={pages[index]}
@@ -86,23 +97,25 @@ export default function SinglePage({ pages, pageFit, direction, onNextChapter, o
 
       {/* Bottom bar */}
       <div
-        className="flex items-center justify-center gap-8 py-3 px-4"
-        style={{ backgroundColor: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)' }}
+        className="flex items-center justify-between gap-2 py-3 px-4"
+        style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
       >
         <button
-          onClick={direction === 'ltr' ? goPrev : goNext}
-          className="text-sm px-3 py-1.5 rounded-lg"
-          style={{ color: 'rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.06)' }}
+          onClick={backward}
+          className="min-w-[72px] h-11 px-4 rounded-xl text-sm font-medium active:opacity-70"
+          style={{ color: 'rgba(255,255,255,0.6)', backgroundColor: 'rgba(255,255,255,0.08)' }}
         >
           {direction === 'ltr' ? '← Prev' : 'Next →'}
         </button>
+
         <span className="text-sm tabular-nums" style={{ color: 'rgba(255,255,255,0.4)' }}>
           {index + 1} / {pages.length}
         </span>
+
         <button
-          onClick={direction === 'ltr' ? goNext : goPrev}
-          className="text-sm px-3 py-1.5 rounded-lg"
-          style={{ color: 'rgba(255,255,255,0.5)', backgroundColor: 'rgba(255,255,255,0.06)' }}
+          onClick={forward}
+          className="min-w-[72px] h-11 px-4 rounded-xl text-sm font-medium active:opacity-70"
+          style={{ color: 'rgba(255,255,255,0.6)', backgroundColor: 'rgba(255,255,255,0.08)' }}
         >
           {direction === 'ltr' ? 'Next →' : '← Prev'}
         </button>

@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import searchRouter from './routes/search';
+import trendingRouter from './routes/trending';
 import mangaRouter from './routes/manga';
 import chapterRouter from './routes/chapter';
 import proxyRouter from './routes/proxy';
@@ -11,7 +12,6 @@ import progressRouter from './routes/progress';
 const app = express();
 const PORT = process.env.PORT ?? 3001;
 
-// Open CORS for personal LAN/Tailscale use
 app.use(cors());
 app.use(express.json());
 
@@ -19,6 +19,7 @@ app.use('/api/auth', authRouter);
 app.use('/api/library', libraryRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/search', searchRouter);
+app.use('/api/trending', trendingRouter);
 app.use('/api/manga', mangaRouter);
 app.use('/api/chapter', chapterRouter);
 app.use('/api/proxy', proxyRouter);
