@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { searchManga, getTrending, MangaSummary, TrendingData } from '../lib/api';
 import { getLibrary, LibraryEntry } from '../lib/userApi';
-import { useAuth } from '../context/AuthContext';
 import SearchBar from '../components/SearchBar';
 import MangaGrid from '../components/MangaGrid';
 import MangaCard from '../components/MangaCard';
@@ -26,7 +25,6 @@ function ShelfRow({ title, manga }: { title: string; manga: MangaSummary[] }) {
 }
 
 export default function Home() {
-  const { logout } = useAuth();
   const [tab, setTab] = useState<Tab>('library');
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<MangaSummary[]>([]);
@@ -95,14 +93,6 @@ export default function Home() {
             title="Settings"
           >
             ⚙
-          </button>
-          <button
-            onClick={logout}
-            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-lg transition-colors text-sm"
-            style={{ backgroundColor: 'var(--card)', color: 'var(--muted)' }}
-            title="Sign out"
-          >
-            ↪
           </button>
         </div>
 

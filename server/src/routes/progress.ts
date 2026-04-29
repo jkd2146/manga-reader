@@ -1,14 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../db';
-import { requireAuth } from '../middleware/auth';
 
 const router = Router();
-
-router.use(requireAuth);
-
-router.get('/', (_req: Request, res: Response) => {
-  res.json(db.progress.getAll());
-});
 
 router.get('/:mangaId', (req: Request, res: Response) => {
   res.json(db.progress.get(req.params.mangaId));

@@ -5,7 +5,6 @@ import trendingRouter from './routes/trending';
 import mangaRouter from './routes/manga';
 import chapterRouter from './routes/chapter';
 import proxyRouter from './routes/proxy';
-import authRouter from './routes/auth';
 import libraryRouter from './routes/library';
 import progressRouter from './routes/progress';
 
@@ -15,7 +14,6 @@ const PORT = process.env.PORT ?? 3001;
 app.use(cors());
 app.use(express.json());
 
-app.use('/api/auth', authRouter);
 app.use('/api/library', libraryRouter);
 app.use('/api/progress', progressRouter);
 app.use('/api/search', searchRouter);

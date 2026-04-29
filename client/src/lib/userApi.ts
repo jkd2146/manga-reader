@@ -15,16 +15,8 @@ export interface ProgressEntry {
   updated_at: number;
 }
 
-function authHeaders(): Record<string, string> {
-  const token = localStorage.getItem('auth_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-}
-
 export async function getLibrary(): Promise<LibraryEntry[]> {
-  const res = await fetch(`${API_BASE}/api/library`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/library`);
   if (!res.ok) return [];
   return res.json() as Promise<LibraryEntry[]>;
 }
@@ -32,20 +24,17 @@ export async function getLibrary(): Promise<LibraryEntry[]> {
 export async function addToLibrary(entry: Omit<LibraryEntry, 'added_at'>): Promise<void> {
   await fetch(`${API_BASE}/api/library`, {
     method: 'POST',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(entry),
   });
 }
 
 export async function removeFromLibrary(mangaId: string): Promise<void> {
-  await fetch(`${API_BASE}/api/library/${mangaId}`, {
-    method: 'DELETE',
-    headers: authHeaders(),
-  });
+  await fetch(`${API_BASE}/api/library/${mangaId}`, { method: 'DELETE' });
 }
 
 export async function getProgress(mangaId: string): Promise<ProgressEntry | null> {
-  const res = await fetch(`${API_BASE}/api/progress/${mangaId}`, { headers: authHeaders() });
+  const res = await fetch(`${API_BASE}/api/progress/${mangaId}`);
   if (!res.ok) return null;
   return res.json() as Promise<ProgressEntry | null>;
 }
@@ -57,7 +46,7 @@ export async function saveProgress(
 ): Promise<void> {
   await fetch(`${API_BASE}/api/progress/${mangaId}`, {
     method: 'PUT',
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ chapter_id: chapterId, chapter_number: chapterNumber }),
   });
 }
