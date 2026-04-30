@@ -36,6 +36,13 @@ export default function SinglePage({ pages, pageFit, direction, onNextChapter, o
 
   useEffect(() => { setIndex(0); setAnimKey(0); }, [pages]);
 
+  // Silently preload the next 2 pages so navigation feels instant
+  useEffect(() => {
+    [index + 1, index + 2].forEach((i) => {
+      if (pages[i]) { const img = new Image(); img.src = pages[i]; }
+    });
+  }, [index, pages]);
+
   const goNext = useCallback(() => {
     if (index < pages.length - 1) {
       dirRef.current = 'forward';

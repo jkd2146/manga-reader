@@ -33,6 +33,12 @@ export async function removeFromLibrary(mangaId: string): Promise<void> {
   await fetch(`${API_BASE}/api/library/${mangaId}`, { method: 'DELETE' });
 }
 
+export async function getAllProgress(): Promise<Record<string, ProgressEntry>> {
+  const res = await fetch(`${API_BASE}/api/progress`);
+  if (!res.ok) return {};
+  return res.json() as Promise<Record<string, ProgressEntry>>;
+}
+
 export async function getProgress(mangaId: string): Promise<ProgressEntry | null> {
   const res = await fetch(`${API_BASE}/api/progress/${mangaId}`);
   if (!res.ok) return null;

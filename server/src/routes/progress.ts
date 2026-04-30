@@ -3,6 +3,10 @@ import { db } from '../db';
 
 const router = Router();
 
+router.get('/', (_req: Request, res: Response) => {
+  res.json(db.progress.getAll());
+});
+
 router.get('/:mangaId', (req: Request, res: Response) => {
   res.json(db.progress.get(req.params.mangaId));
 });

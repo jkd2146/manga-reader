@@ -173,13 +173,17 @@ export default function MangaDetailPage() {
               </button>
             </div>
 
-            {continueChapter && (
+            {manga.chapters.length > 0 && (
               <Link
-                to={`/manga/${source}/${manga.id}/chapter/${continueChapter.id}`}
+                to={`/manga/${source}/${manga.id}/chapter/${
+                  continueChapter ? continueChapter.id : manga.chapters[0].id
+                }`}
                 className="inline-flex items-center gap-2 mb-4 px-5 py-2.5 rounded-xl text-sm font-semibold transition-opacity hover:opacity-90"
                 style={{ background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-2) 100%)', color: 'var(--bg)', boxShadow: '0 4px 20px rgba(201,168,108,0.3)' }}
               >
-                ▶ Continue — Ch. {continueChapter.number}
+                {continueChapter
+                  ? `▶ Continue — Ch. ${continueChapter.number}`
+                  : `▶ Start Reading — Ch. ${manga.chapters[0].number}`}
               </Link>
             )}
 

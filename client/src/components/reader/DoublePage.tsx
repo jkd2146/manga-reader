@@ -34,6 +34,14 @@ export default function DoublePage({ pages, pageFit, direction, onNextChapter, o
 
   useEffect(() => { setSpread(0); setAnimKey(0); }, [pages]);
 
+  // Preload next spread's pages
+  useEffect(() => {
+    const nextSpreadStart = 1 + spread * 2;
+    [nextSpreadStart, nextSpreadStart + 1, nextSpreadStart + 2].forEach((i) => {
+      if (pages[i]) { const img = new Image(); img.src = pages[i]; }
+    });
+  }, [spread, pages]);
+
   const totalSpreads = Math.ceil((pages.length - 1) / 2) + 1;
 
   function spreadToPages(s: number): [number, number | null] {
