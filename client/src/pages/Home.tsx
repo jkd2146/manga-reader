@@ -76,7 +76,7 @@ export default function Home() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
       <header
         className="sticky top-0 z-10"
-        style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
+        style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-4">
           <span

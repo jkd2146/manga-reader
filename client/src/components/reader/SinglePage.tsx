@@ -97,8 +97,8 @@ export default function SinglePage({ pages, pageFit, direction, onNextChapter, o
 
       {/* Bottom bar */}
       <div
-        className="flex items-center justify-between gap-2 py-3 px-4"
-        style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)' }}
+        className="flex items-center justify-between gap-2 px-4 pt-3"
+        style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
       >
         <button
           onClick={backward}

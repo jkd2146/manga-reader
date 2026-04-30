@@ -85,16 +85,17 @@ export default function Reader() {
     <div className="min-h-screen bg-black">
       {/* Top nav */}
       <div
-        className="sticky top-0 z-20 px-4 py-3 transition-opacity duration-200"
+        className="sticky top-0 z-20 transition-opacity duration-200"
         style={{
           backgroundColor: 'rgba(0,0,0,0.85)',
           backdropFilter: 'blur(12px)',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           opacity: headerVisible ? 1 : 0,
           pointerEvents: headerVisible ? 'auto' : 'none',
+          paddingTop: 'env(safe-area-inset-top)',
         }}
       >
-        <div className="max-w-3xl mx-auto flex items-center gap-3">
+        <div className="max-w-3xl mx-auto flex items-center gap-3 px-4 py-3">
           <Link
             to={`/manga/${source}/${mangaId}`}
             className="text-sm font-medium shrink-0"

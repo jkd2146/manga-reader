@@ -76,19 +76,21 @@ export default function MangaDetailPage() {
     <div className="min-h-screen" style={{ backgroundColor: 'var(--bg)' }}>
       {/* Nav bar */}
       <div
-        className="sticky top-0 z-20 px-4 py-3 flex items-center justify-between"
-        style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)' }}
+        className="sticky top-0 z-20"
+        style={{ backgroundColor: 'var(--bg)', borderBottom: '1px solid var(--border)', paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <Link to="/" className="flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--accent)' }}>
-          ← Library
-        </Link>
-        <button
-          onClick={() => setSettingsOpen(true)}
-          className="w-8 h-8 flex items-center justify-center rounded-lg"
-          style={{ backgroundColor: 'var(--card)', color: 'var(--muted)' }}
-        >
-          ⚙
-        </button>
+        <div className="px-4 py-3 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-1.5 text-sm font-medium" style={{ color: 'var(--accent)' }}>
+            ← Library
+          </Link>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className="w-10 h-10 flex items-center justify-center rounded-lg"
+            style={{ backgroundColor: 'var(--card)', color: 'var(--muted)' }}
+          >
+            ⚙
+          </button>
+        </div>
       </div>
 
       {/* Hero — blurred backdrop */}
