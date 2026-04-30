@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { PageFit, ReadingDirection } from '../../context/SettingsContext';
-import { useSwipe } from '../../hooks/useSwipe';
 
 interface Props {
   pages: string[];
@@ -29,10 +28,11 @@ function pageImgStyle(fit: PageFit): React.CSSProperties {
 }
 
 export default function DoublePage({ pages, pageFit, direction, onNextChapter, onPrevChapter }: Props) {
-  // spread 0 = page 0 alone (cover), spread N = pages 2N-1 and 2N
   const [spread, setSpread] = useState(0);
+  const [animKey, setAnimKey] = useState(0);
+  const dirRef = useRef<'forward' | 'backward'>('forward');
 
-  useEffect(() => { setSpread(0); }, [pages]);
+  useEffect(() => { setSpread(0); setAnimKey(0); }, [pages]);
 
   const totalSpreads = Math.ceil((pages.length - 1) / 2) + 1;
 
@@ -44,13 +44,23 @@ export default function DoublePage({ pages, pageFit, direction, onNextChapter, o
   }
 
   const goNext = useCallback(() => {
-    if (spread < totalSpreads - 1) setSpread((s) => s + 1);
-    else onNextChapter?.();
+    if (spread < totalSpreads - 1) {
+      dirRef.current = 'forward';
+      setAnimKey((k) => k + 1);
+      setSpread((s) => s + 1);
+    } else {
+      onNextChapter?.();
+    }
   }, [spread, totalSpreads, onNextChapter]);
 
   const goPrev = useCallback(() => {
-    if (spread > 0) setSpread((s) => s - 1);
-    else onPrevChapter?.();
+    if (spread > 0) {
+      dirRef.current = 'backward';
+      setAnimKey((k) => k + 1);
+      setSpread((s) => s - 1);
+    } else {
+      onPrevChapter?.();
+    }
   }, [spread, onPrevChapter]);
 
   const forward  = direction === 'ltr' ? goNext : goPrev;
@@ -59,19 +69,13 @@ export default function DoublePage({ pages, pageFit, direction, onNextChapter, o
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'ArrowRight') forward();
-      if (e.key === 'ArrowLeft') backward();
+      if (e.key === 'ArrowLeft')  backward();
     }
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [forward, backward]);
 
-  const { onTouchStart, onTouchEnd, consumeSwipe } = useSwipe({
-    onSwipeLeft: forward,
-    onSwipeRight: backward,
-  });
-
   function handleClick(e: React.MouseEvent<HTMLDivElement>) {
-    if (consumeSwipe()) return;
     const mid = e.currentTarget.getBoundingClientRect().width / 2;
     e.clientX > mid ? forward() : backward();
   }
@@ -86,18 +90,16 @@ export default function DoublePage({ pages, pageFit, direction, onNextChapter, o
 
   const [pageA, pageB] = spreadToPages(spread);
   const style = pageImgStyle(pageFit);
+  const animClass = dirRef.current === 'forward' ? 'page-enter-right' : 'page-enter-left';
 
   return (
     <div className="flex flex-col" style={{ minHeight: `calc(100dvh - 48px)` }}>
-      {/* Spread area */}
+      {/* Spread area — tap left/right half to navigate, pinch to zoom */}
       <div
         className="flex-1 flex items-center justify-center gap-0 px-2 py-2 sm:px-4 sm:py-3 cursor-pointer select-none"
         onClick={handleClick}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-        style={{ touchAction: 'pan-y' }}
       >
-        <div className="flex-1 flex justify-end">
+        <div key={animKey} className={`flex flex-1 justify-end ${animClass}`}>
           <img
             src={pages[pageA]}
             alt={`Page ${pageA + 1}`}
@@ -107,7 +109,7 @@ export default function DoublePage({ pages, pageFit, direction, onNextChapter, o
           />
         </div>
         {pageB !== null && (
-          <div className="flex-1 flex justify-start">
+          <div className="flex flex-1 justify-start">
             <img
               src={pages[pageB]}
               alt={`Page ${pageB + 1}`}
@@ -122,7 +124,11 @@ export default function DoublePage({ pages, pageFit, direction, onNextChapter, o
       {/* Bottom bar */}
       <div
         className="flex items-center justify-between gap-2 px-4 pt-3"
-        style={{ backgroundColor: 'rgba(0,0,0,0.75)', backdropFilter: 'blur(8px)', paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}
+        style={{
+          backgroundColor: 'rgba(0,0,0,0.75)',
+          backdropFilter: 'blur(8px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)',
+        }}
       >
         <button
           onClick={backward}
@@ -131,11 +137,9 @@ export default function DoublePage({ pages, pageFit, direction, onNextChapter, o
         >
           {direction === 'ltr' ? '← Prev' : 'Next →'}
         </button>
-
         <span className="text-sm tabular-nums" style={{ color: 'rgba(255,255,255,0.4)' }}>
           {spread + 1} / {totalSpreads}
         </span>
-
         <button
           onClick={forward}
           className="min-w-[72px] h-11 px-4 rounded-xl text-sm font-medium active:opacity-70"
